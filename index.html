@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ChromEdgeDigital Shortcuts - A premium keyboard shortcuts collection to accelerate your digital workflows. Filter keys instantly in real-time.">
+  <title>ChromEdgeDigital Shortcuts | Accelerate Your Digital Workflows</title>
+  <link rel="stylesheet" href="style.css?v=2.7">
+</head>
+<body>
+
+
+  <!-- Cybernetic Grid Backdrop Overlay -->
+  <div class="grid-overlay"></div>
+
+  <!-- Custom Glow Cursor Follower -->
+  <div class="cursor-pointer-dot-wrapper">
+    <div class="cursor-pointer-glow"></div>
+    <div class="cursor-pointer-dot"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-brand" id="nav-brand-link">
+        <img src="assets/logo-icon.png" alt="ChromEdgeDigital Icon" class="logo-icon">
+        <img src="assets/logo-dark-text.png" alt="ChromEdgeDigital" class="logo-text" id="logo-text-img">
+      </a>
+      <div class="nav-menu">
+        <a href="#" class="nav-link active" id="nav-home-btn">Home</a>
+        <a href="#" class="nav-link" id="nav-add-btn">+ Add Shortcut</a>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-button-primary" id="cta-add-shortcut-btn">+ Custom Key</button>
+      </div>
+      <button class="nav-menu-button" aria-label="Toggle Navigation menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Header Section -->
+  <section class="hero-section">
+    <!-- Cinematic Hero Details -->
+    <div class="hero-orb"></div>
+    <div class="scanlines"></div>
+    <div class="particles">
+      <span class="particle" style="--i:1; --delay:0s; --left:10%;"></span>
+      <span class="particle" style="--i:2; --delay:1.5s; --left:20%;"></span>
+      <span class="particle" style="--i:3; --delay:3s; --left:15%;"></span>
+      <span class="particle" style="--i:4; --delay:0.8s; --left:35%;"></span>
+      <span class="particle" style="--i:5; --delay:2.2s; --left:45%;"></span>
+      <span class="particle" style="--i:6; --delay:4.1s; --left:30%;"></span>
+      <span class="particle" style="--i:7; --delay:1.1s; --left:60%;"></span>
+      <span class="particle" style="--i:8; --delay:3.5s; --left:50%;"></span>
+      <span class="particle" style="--i:9; --delay:2.7s; --left:70%;"></span>
+      <span class="particle" style="--i:10; --delay:0.5s; --left:80%;"></span>
+      <span class="particle" style="--i:11; --delay:1.9s; --left:85%;"></span>
+      <span class="particle" style="--i:12; --delay:3.2s; --left:75%;"></span>
+      <span class="particle" style="--i:13; --delay:4.7s; --left:90%;"></span>
+      <span class="particle" style="--i:14; --delay:0.2s; --left:25%;"></span>
+      <span class="particle" style="--i:15; --delay:2.5s; --left:40%;"></span>
+      <span class="particle" style="--i:16; --delay:3.8s; --left:65%;"></span>
+      <span class="particle" style="--i:17; --delay:1.3s; --left:55%;"></span>
+      <span class="particle" style="--i:18; --delay:2.9s; --left:5%;"></span>
+      <span class="particle" style="--i:19; --delay:4.4s; --left:95%;"></span>
+      <span class="particle" style="--i:20; --delay:0.9s; --left:72%;"></span>
+      <span class="particle" style="--i:21; --delay:2.1s; --left:18%;"></span>
+      <span class="particle" style="--i:22; --delay:3.6s; --left:82%;"></span>
+      <span class="particle" style="--i:23; --delay:1.7s; --left:48%;"></span>
+      <span class="particle" style="--i:24; --delay:4.0s; --left:33%;"></span>
+      <span class="particle" style="--i:25; --delay:0.4s; --left:58%;"></span>
+    </div>
+    
+    <div class="hero-glow-back"></div>
+    <div class="hero-caption">
+      <img src="assets/logo-accent.png" alt="Accent" class="hero-caption-icon" style="height:12px; border-radius:3px;">
+      Workflow Accelerators
+    </div>
+    <h1>MASTER KEYBOARD <br><span>Shortcuts Database</span></h1>
+    <p>Your premium, curated collection of keyboard shortcuts to accelerate your digital workflows. Filter keys instantly in real-time.</p>
+  </section>
+
+  <!-- Main Content Container -->
+  <div class="container">
+    
+    <!-- Tab Navigation Selector (Dynamically Rendered) -->
+    <div class="tabs-outer-wrapper">
+      <div class="tabs-wrapper">
+        <div class="tab-container" id="app-tabs">
+          <!-- Dynamic Tabs Added Here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Real-time Live Search Input -->
+    <div class="search-wrapper" id="search-section">
+      <input type="text" id="search-input" class="search-input" placeholder="Search shortcuts instantly... (e.g. close, navigation, read)">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+
+    <!-- Dynamic Shortcuts Content Area -->
+    <div id="shortcuts-display-area">
+      <!-- Generated Cards go here -->
+    </div>
+
+    <!-- Add Shortcut Form Panel (Initially hidden or active depending on tab) -->
+    <div id="add-shortcut-panel" class="tab-content">
+      <div class="coming-soon-card form-card">
+        <h2>Create Custom Shortcut Map</h2>
+        <p>Dynamically append new keyboard shortcut rules to existing applications or register a brand-new workspace.</p>
+        
+        <form class="coming-soon-form" id="shortcut-creator-form">
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label for="app-select">Target Application</label>
+              <select id="app-select" class="form-input select-input" required>
+                <!-- Dynamic options added here + "Create New App..." option -->
+              </select>
+            </div>
+            
+            <div class="form-group" id="new-app-group" style="display: none;">
+              <label for="new-app-name">New App Name</label>
+              <input type="text" id="new-app-name" class="form-input" placeholder="e.g. Slack, Photoshop">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="shortcut-category">Category / Grouping</label>
+            <input type="text" id="shortcut-category" class="form-input" placeholder="e.g. Window Management, Editing, Navigation" required>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label for="shortcut-action">Action / Command</label>
+              <input type="text" id="shortcut-action" class="form-input" placeholder="e.g. Close current file, Open Command Palette" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="shortcut-keys">Key Combination</label>
+              <input type="text" id="shortcut-keys" class="form-input" placeholder="e.g. Ctrl + Shift + P, Alt + Down" required>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn-submit">Add Shortcut</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast-notification" class="toast">
+    <div class="toast-content">
+      <span class="toast-icon">✓</span>
+      <span class="toast-text">Shortcut added successfully!</span>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="footer-brand-logo">
+            <img src="assets/logo-icon.png" alt="ChromEdgeDigital Icon" class="logo-icon">
+            <img src="assets/logo-dark-text.png" alt="ChromEdgeDigital" class="logo-text" id="footer-logo-text-img">
+          </div>
+          <p>Accelerating digital speed and workflow efficiency with curated shortcut maps.</p>
+        </div>
+        <div class="footer-links-grid">
+          <div class="footer-col">
+            <h4>Social</h4>
+            <div class="footer-links-list">
+              <a href="https://x.com/GSPareekk1" target="_blank" rel="noopener noreferrer" class="footer-link">Twitter / X</a>
+              <a href="https://github.com/avdhuu" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+              <a href="https://t.me/GhanshyamPareek" target="_blank" rel="noopener noreferrer" class="footer-link">Telegram</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 ChromEdgeDigital. All rights reserved.</p>
+        <p class="footer-cursive-text">It's Just Starting.. Coming Soon with Better Version</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Manual JSON Shortcuts Editor Modal -->
+  <div id="json-editor-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="json-editor-title">Edit Shortcuts Configuration</h3>
+        <button class="modal-close-btn" id="close-modal-btn">&times;</button>
+      </div>
+      <p class="modal-desc">Edit all shortcuts manually in single click. Modify the JSON structures below. Actions and keycaps must match the fields.</p>
+      <textarea id="json-editor-textarea" class="json-textarea" spellcheck="false"></textarea>
+      <div id="json-error-msg" class="json-error" style="display: none;">Invalid JSON structure! Make sure to follow: [{"category":"...", "action":"...", "keys":"..."}]</div>
+      <div class="modal-actions-bar">
+        <button class="btn-secondary" id="cancel-json-btn">Cancel</button>
+        <button class="btn-submit" id="save-json-btn" style="margin-top: 0; width: auto; padding: 10px 24px;">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js?v=1.7"></script>
+</body>
+</html>
