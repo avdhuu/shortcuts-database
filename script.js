@@ -78,35 +78,75 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeTab = "Telegram";
   let shortcutStore = {};
   let deletedApps = [];
+  let isAdmin = false;
 
-  // Retrieve user customized shortcuts from LocalStorage
-  function loadShortcuts() {
-    const saved = localStorage.getItem('custom_shortcuts_v1');
-    if (saved) {
-      try {
-        shortcutStore = JSON.parse(saved);
-      } catch (e) {
+  function checkAdminStatus() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'priyalalju') {
+      localStorage.setItem('isAdmin_v1', 'true');
+      urlParams.delete('admin');
+      const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+    isAdmin = localStorage.getItem('isAdmin_v1') === 'true';
+  }
+
+  // Retrieve user customized shortcuts from Cloud Database
+  async function loadShortcuts() {
+    try {
+      const shortcutsRes = await fetch('https://kvdb.io/5FYh9Y191oKiuEJcEPTAGC/shortcuts');
+      if (shortcutsRes.ok) {
+        shortcutStore = await shortcutsRes.json();
+        localStorage.setItem('custom_shortcuts_v1', JSON.stringify(shortcutStore));
+      } else if (shortcutsRes.status === 404) {
         shortcutStore = {};
       }
+    } catch (e) {
+      console.warn("Failed to load shortcuts from cloud:", e);
     }
     
-    const savedDeleted = localStorage.getItem('deleted_apps_v1');
-    if (savedDeleted) {
-      try {
-        deletedApps = JSON.parse(savedDeleted);
-      } catch (e) {
+    try {
+      const deletedRes = await fetch('https://kvdb.io/5FYh9Y191oKiuEJcEPTAGC/deleted_apps');
+      if (deletedRes.ok) {
+        deletedApps = await deletedRes.json();
+        localStorage.setItem('deleted_apps_v1', JSON.stringify(deletedApps));
+      } else if (deletedRes.status === 404) {
         deletedApps = [];
+      }
+    } catch (e) {
+      console.warn("Failed to load deleted apps from cloud:", e);
+    }
+  }
+
+  // Save changes back to LocalStorage & Cloud Database
+  async function saveShortcuts() {
+    localStorage.setItem('custom_shortcuts_v1', JSON.stringify(shortcutStore));
+    if (isAdmin) {
+      try {
+        await fetch('https://kvdb.io/5FYh9Y191oKiuEJcEPTAGC/shortcuts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(shortcutStore)
+        });
+      } catch (e) {
+        console.error("Failed to sync shortcuts to cloud:", e);
       }
     }
   }
 
-  // Save changes back to LocalStorage
-  function saveShortcuts() {
-    localStorage.setItem('custom_shortcuts_v1', JSON.stringify(shortcutStore));
-  }
-
-  function saveDeletedApps() {
+  async function saveDeletedApps() {
     localStorage.setItem('deleted_apps_v1', JSON.stringify(deletedApps));
+    if (isAdmin) {
+      try {
+        await fetch('https://kvdb.io/5FYh9Y191oKiuEJcEPTAGC/deleted_apps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(deletedApps)
+        });
+      } catch (e) {
+        console.error("Failed to sync deleted apps to cloud:", e);
+      }
+    }
   }
 
   // Combine preloaded and custom user shortcuts
@@ -152,18 +192,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add Special "+ Add Tab" Button
-    const newTabBtn = document.createElement('button');
-    newTabBtn.className = `tab-button add-tab-btn`;
-    newTabBtn.textContent = '+ Create App Tab';
-    newTabBtn.addEventListener('click', () => createNewTabPrompt());
-    appTabsContainer.appendChild(newTabBtn);
+    if (isAdmin) {
+      const newTabBtn = document.createElement('button');
+      newTabBtn.className = `tab-button add-tab-btn`;
+      newTabBtn.textContent = '+ Create App Tab';
+      newTabBtn.addEventListener('click', () => createNewTabPrompt());
+      appTabsContainer.appendChild(newTabBtn);
 
-    // Add Special "+ Add Shortcut" Tab
-    const addBtn = document.createElement('button');
-    addBtn.className = `tab-button add-tab-btn ${activeTab === 'ADD_MORE_PANEL' ? 'active' : ''}`;
-    addBtn.textContent = '+ Add Shortcut';
-    addBtn.addEventListener('click', () => selectApp('ADD_MORE_PANEL'));
-    appTabsContainer.appendChild(addBtn);
+      // Add Special "+ Add Shortcut" Tab
+      const addBtn = document.createElement('button');
+      addBtn.className = `tab-button add-tab-btn ${activeTab === 'ADD_MORE_PANEL' ? 'active' : ''}`;
+      addBtn.textContent = '+ Add Shortcut';
+      addBtn.addEventListener('click', () => selectApp('ADD_MORE_PANEL'));
+      appTabsContainer.appendChild(addBtn);
+    }
 
 
   }
@@ -242,24 +284,26 @@ document.addEventListener('DOMContentLoaded', () => {
     titleHeader.textContent = `${activeTab} Workspace`;
     headerControls.appendChild(titleHeader);
 
-    const actionGroup = document.createElement('div');
-    actionGroup.className = 'app-actions-group';
+    if (isAdmin) {
+      const actionGroup = document.createElement('div');
+      actionGroup.className = 'app-actions-group';
 
-    // "Edit All JSON" Trigger
-    const editAllBtn = document.createElement('button');
-    editAllBtn.className = 'btn-action-outline';
-    editAllBtn.textContent = 'Edit JSON Config';
-    editAllBtn.addEventListener('click', () => openJsonEditor(activeTab));
-    actionGroup.appendChild(editAllBtn);
+      // "Edit All JSON" Trigger
+      const editAllBtn = document.createElement('button');
+      editAllBtn.className = 'btn-action-outline';
+      editAllBtn.textContent = 'Edit JSON Config';
+      editAllBtn.addEventListener('click', () => openJsonEditor(activeTab));
+      actionGroup.appendChild(editAllBtn);
 
-    // "Delete Tab" Trigger
-    const deleteTabBtn = document.createElement('button');
-    deleteTabBtn.className = 'btn-action-outline danger';
-    deleteTabBtn.textContent = 'Delete Tab';
-    deleteTabBtn.addEventListener('click', () => deleteCurrentAppTab());
-    actionGroup.appendChild(deleteTabBtn);
+      // "Delete Tab" Trigger
+      const deleteTabBtn = document.createElement('button');
+      deleteTabBtn.className = 'btn-action-outline danger';
+      deleteTabBtn.textContent = 'Delete Tab';
+      deleteTabBtn.addEventListener('click', () => deleteCurrentAppTab());
+      actionGroup.appendChild(deleteTabBtn);
 
-    headerControls.appendChild(actionGroup);
+      headerControls.appendChild(actionGroup);
+    }
     shortcutsDisplayArea.appendChild(headerControls);
 
     const list = getShortcutsForApp(activeTab);
@@ -349,7 +393,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // RENDER QUICK INLINE ADD FORM AT THE BOTTOM OF THE TAB VIEW
-    renderInlineAddForm(shortcutsDisplayArea);
+    if (isAdmin) {
+      renderInlineAddForm(shortcutsDisplayArea);
+    }
 
     // Rebind mouse enter/leave listeners to new elements for custom cursor scaling
     bindCursorHoverEvents();
@@ -422,6 +468,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function selectApp(app) {
+    if (app === 'ADD_MORE_PANEL' && !isAdmin) {
+      app = getAppList()[0] || 'Telegram';
+    }
     activeTab = app;
     searchInput.value = '';
     renderTabs();
@@ -795,10 +844,64 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // 8. BOOTSTRAP INITIALIZATION
   // =========================================================================
-  loadShortcuts();
+  checkAdminStatus();
+
+  // Load cached settings immediately for fast layout loading
+  const savedCached = localStorage.getItem('custom_shortcuts_v1');
+  if (savedCached) {
+    try {
+      shortcutStore = JSON.parse(savedCached);
+    } catch (e) {}
+  }
+  const savedDeletedCached = localStorage.getItem('deleted_apps_v1');
+  if (savedDeletedCached) {
+    try {
+      deletedApps = JSON.parse(savedDeletedCached);
+    } catch (e) {}
+  }
+
+  // Toggle Admin Portal Login trigger
+  const adminTrigger = document.getElementById('admin-login-trigger');
+  if (adminTrigger) {
+    if (isAdmin) {
+      adminTrigger.textContent = "Logout Admin";
+      adminTrigger.addEventListener('click', () => {
+        localStorage.removeItem('isAdmin_v1');
+        showToast("Logged out of Admin Portal!");
+        setTimeout(() => window.location.reload(), 1000);
+      });
+    } else {
+      adminTrigger.addEventListener('click', () => {
+        const pass = prompt("Enter Admin Password:");
+        if (pass === 'priyalalju') {
+          localStorage.setItem('isAdmin_v1', 'true');
+          showToast("Logged in as Admin!");
+          setTimeout(() => window.location.reload(), 1000);
+        } else if (pass !== null) {
+          showToast("Incorrect Password!");
+        }
+      });
+    }
+  }
+
+  // Toggle Admin visibility elements
+  if (ctaAddShortcutBtn) ctaAddShortcutBtn.style.display = isAdmin ? 'inline-block' : 'none';
+  if (navAddBtn) navAddBtn.style.display = isAdmin ? 'inline-block' : 'none';
+
   renderTabs();
   renderShortcuts();
   initForm();
+
+  // Fetch fresh data from KVDB database in background and re-render
+  loadShortcuts().then(() => {
+    const apps = getAppList();
+    if (!apps.includes(activeTab) && activeTab !== 'ADD_MORE_PANEL') {
+      activeTab = apps[0] || 'ADD_MORE_PANEL';
+    }
+    renderTabs();
+    renderShortcuts();
+    initForm();
+  });
   
   // Connect branding link home button
   const brandLink = document.getElementById('nav-brand-link');
