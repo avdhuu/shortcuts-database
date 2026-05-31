@@ -659,19 +659,41 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const parsed = JSON.parse(text);
         
-        // Basic schema validator
+        // Fault-tolerant schema validator & auto-mapper
         if (!Array.isArray(parsed)) {
-          throw new Error("Must be an array of shortcuts");
+          throw new Error("JSON must be a list (array) of shortcut objects");
         }
 
-        parsed.forEach(item => {
-          if (typeof item.category !== 'string' || typeof item.action !== 'string' || typeof item.keys !== 'string') {
-            throw new Error("Invalid structure, missing keys");
+        const normalized = parsed.map((item, index) => {
+          if (typeof item !== 'object' || item === null) {
+            throw new Error(`Item at index ${index} is not a valid object`);
           }
+
+          // Auto-map category variations
+          let category = item.category || item.group || item.section || item.category_name || "General";
+          
+          // Auto-map action variations
+          let action = item.action || item.command || item.shortcut || item.name || item.description || "Unnamed Action";
+          
+          // Auto-map keys variations
+          let keys = item.keys || item.key || item.shortcut_keys || item.combination || "";
+
+          // Normalize values as trimmed strings
+          category = String(category).trim();
+          action = String(action).trim();
+          keys = String(keys).trim();
+
+          if (!action) action = "Unnamed Action";
+          if (!category) category = "General";
+          if (!keys) {
+            throw new Error(`Item "${action}" at index ${index} is missing its keyboard combination ('keys' field)`);
+          }
+
+          return { category, action, keys };
         });
 
         // Valid configuration, save to custom store
-        shortcutStore[currentEditingApp] = parsed;
+        shortcutStore[currentEditingApp] = normalized;
         
         // Remove from deletedApps if it was deleted
         if (deletedApps.includes(currentEditingApp)) {
