@@ -659,38 +659,157 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const parsed = JSON.parse(text);
         
-        // Fault-tolerant schema validator & auto-mapper
-        if (!Array.isArray(parsed)) {
-          throw new Error("JSON must be a list (array) of shortcut objects");
+        // Helper function to extract keys as a string
+        function getKeysString(keysVal) {
+          if (Array.isArray(keysVal)) {
+            return keysVal.join(" + ");
+          }
+          return String(keysVal || "").trim();
         }
 
-        const normalized = parsed.map((item, index) => {
-          if (typeof item !== 'object' || item === null) {
-            throw new Error(`Item at index ${index} is not a valid object`);
+        // Recursive or multi-strategy normalizer/flattener
+        function flattenNestedObject(obj, defaultCategory = "General") {
+          let list = [];
+
+          if (Array.isArray(obj)) {
+            for (let i = 0; i < obj.length; i++) {
+              const item = obj[i];
+              if (typeof item === 'object' && item !== null) {
+                if (item.platforms || item.sections || item.shortcuts) {
+                  list = list.concat(flattenNestedObject(item, defaultCategory));
+                } else {
+                  const keys = getKeysString(item.keys || item.key || item.shortcut_keys || item.combination || "");
+                  let action = item.action || item.command || item.shortcut || item.name || item.description || "Unnamed Action";
+                  let category = item.category || item.group || item.section || item.category_name || defaultCategory;
+                  
+                  action = String(action).trim();
+                  category = String(category).trim();
+
+                  if (keys) {
+                    list.push({
+                      category: category || defaultCategory,
+                      action: action || "Unnamed Action",
+                      keys: keys
+                    });
+                  }
+                }
+              }
+            }
+            return list;
           }
 
-          // Auto-map category variations
-          let category = item.category || item.group || item.section || item.category_name || "General";
-          
-          // Auto-map action variations
-          let action = item.action || item.command || item.shortcut || item.name || item.description || "Unnamed Action";
-          
-          // Auto-map keys variations
-          let keys = item.keys || item.key || item.shortcut_keys || item.combination || "";
+          if (typeof obj === 'object' && obj !== null) {
+            // 1. Check if it has platforms
+            if (Array.isArray(obj.platforms)) {
+              for (const platform of obj.platforms) {
+                const platformName = platform.name || platform.title || platform.id || "";
+                const nextCategory = platformName ? platformName : defaultCategory;
+                
+                if (Array.isArray(platform.sections)) {
+                  for (const section of platform.sections) {
+                    const sectionTitle = section.title || section.name || section.id || "";
+                    const catName = platformName && sectionTitle ? `${platformName} - ${sectionTitle}` : (sectionTitle || platformName || defaultCategory);
+                    if (Array.isArray(section.shortcuts)) {
+                      for (const sc of section.shortcuts) {
+                        const keys = getKeysString(sc.keys || sc.key || sc.shortcut_keys || sc.combination || "");
+                        let action = sc.action || sc.command || sc.shortcut || sc.name || sc.description || "Unnamed Action";
+                        action = String(action).trim();
+                        if (keys) {
+                          list.push({
+                            category: catName,
+                            action: action || "Unnamed Action",
+                            keys: keys
+                          });
+                        }
+                      }
+                    }
+                  }
+                } else if (Array.isArray(platform.shortcuts)) {
+                  for (const sc of platform.shortcuts) {
+                    const keys = getKeysString(sc.keys || sc.key || sc.shortcut_keys || sc.combination || "");
+                    let action = sc.action || sc.command || sc.shortcut || sc.name || sc.description || "Unnamed Action";
+                    action = String(action).trim();
+                    const section = sc.category || sc.group || sc.section || sc.category_name || "";
+                    const catName = platformName && section ? `${platformName} - ${section}` : (platformName || defaultCategory);
+                    if (keys) {
+                      list.push({
+                        category: catName,
+                        action: action || "Unnamed Action",
+                        keys: keys
+                      });
+                    }
+                  }
+                }
+              }
+              return list;
+            }
 
-          // Normalize values as trimmed strings
-          category = String(category).trim();
-          action = String(action).trim();
-          keys = String(keys).trim();
+            // 2. Check if it has sections
+            if (Array.isArray(obj.sections)) {
+              for (const section of obj.sections) {
+                const sectionTitle = section.title || section.name || section.id || defaultCategory;
+                if (Array.isArray(section.shortcuts)) {
+                  for (const sc of section.shortcuts) {
+                    const keys = getKeysString(sc.keys || sc.key || sc.shortcut_keys || sc.combination || "");
+                    let action = sc.action || sc.command || sc.shortcut || sc.name || sc.description || "Unnamed Action";
+                    action = String(action).trim();
+                    if (keys) {
+                      list.push({
+                        category: String(sectionTitle).trim(),
+                        action: action || "Unnamed Action",
+                        keys: keys
+                      });
+                    }
+                  }
+                }
+              }
+              return list;
+            }
 
-          if (!action) action = "Unnamed Action";
-          if (!category) category = "General";
-          if (!keys) {
-            throw new Error(`Item "${action}" at index ${index} is missing its keyboard combination ('keys' field)`);
+            // 3. Check if it has shortcuts
+            if (Array.isArray(obj.shortcuts)) {
+              for (const sc of obj.shortcuts) {
+                const keys = getKeysString(sc.keys || sc.key || sc.shortcut_keys || sc.combination || "");
+                let action = sc.action || sc.command || sc.shortcut || sc.name || sc.description || "Unnamed Action";
+                action = String(action).trim();
+                let category = sc.category || sc.group || sc.section || sc.category_name || defaultCategory;
+                category = String(category).trim();
+                if (keys) {
+                  list.push({
+                    category: category || defaultCategory,
+                    action: action || "Unnamed Action",
+                    keys: keys
+                  });
+                }
+              }
+              return list;
+            }
+
+            // 4. Default: iterate properties to find nested lists/objects
+            for (const key of Object.keys(obj)) {
+              // Avoid repeating parent fields or meta
+              if (key === 'platforms' || key === 'sections' || key === 'shortcuts') continue;
+              if (Array.isArray(obj[key])) {
+                const subList = flattenNestedObject(obj[key], defaultCategory);
+                if (subList.length > 0) {
+                  list = list.concat(subList);
+                }
+              } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                const subList = flattenNestedObject(obj[key], defaultCategory);
+                if (subList.length > 0) {
+                  list = list.concat(subList);
+                }
+              }
+            }
           }
 
-          return { category, action, keys };
-        });
+          return list;
+        }
+
+        const normalized = flattenNestedObject(parsed);
+        if (normalized.length === 0) {
+          throw new Error("Could not extract any valid shortcuts from the JSON structure.");
+        }
 
         // Valid configuration, save to custom store
         shortcutStore[currentEditingApp] = normalized;
