@@ -290,6 +290,8 @@ body {
   transition: color 0.25s ease;
   position: relative;
   padding: 6px 0;
+  display: inline-block;
+  text-align: center;
 }
 
 .nav-link:hover, .nav-link.active {
