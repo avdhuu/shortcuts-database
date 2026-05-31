@@ -240,6 +240,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .nav-brand {
@@ -279,6 +280,14 @@ body {
   display: flex;
   align-items: center;
   gap: 28px;
+}
+
+@media screen and (min-width: 768px) {
+  .nav-menu {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .nav-link {
